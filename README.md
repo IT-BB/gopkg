@@ -43,10 +43,10 @@ $GOROOT/src.gopkg
 自动提取第三方依赖
 ==================
 
-对于 app 应用, 在对应的 `./Gopkg` 目录保存第三方依赖的信息.
+对于 app 应用, 在对应的 `./Gopkgs` 目录保存第三方依赖的信息.
 格式和 godep 类似.
 
-依赖信息在 `Gopkg/Gopkg.json` 文件中.
+依赖信息在 `Gopkgs/Gopkgs.json` 文件中.
 
 当前app可以是普通目录(不受git等管理).
 
@@ -69,6 +69,94 @@ $GOROOT/src.gopkg
 
 其中 vcs 部分除了标准的 "git", "hg", "svn" 工具外, 还支持 **zip** 格式.
 
+安装
+====
+
+	$ go get github.com/gopkg/gopkg
+
+起步
+====
+
+如何向 gopkg 添加项目.
+
+假设你的应用代码完成到一定阶段, 想要使用 `go install` 和 `go test` 完成构建,
+只需要一条 gopkg 命令:
+
+	$ gopkg save
+
+此命令会保存版本依赖关系表保存到文件 Gopkgs/Gopkgs.json, 并复制源代码到 Gopkgs/_workspace.
+确保总有一份依赖源码可用.
+
+恢复
+====
+
+`gopkg restore` 命令是 `gopkg save` 的反向操作. 它将 Gopkgs/Gopkgs.json 中的依赖包安装到你的 GOPATH 路径中.
+
+测试
+====
+
+	$ gopkg go test
+
+增加依赖
+========
+
+当你的项目源码中 import 改变后再次使用 `gopkg save` 即可.
+
+更新依赖
+========
+
+当你需要更新依赖包, 依次执行命令:
+
+	1. `go get -u pathto/Dependency`
+	2. `gopkg update pathto/Dependency`
+
+多包支持
+========
+
+你可以将多个项目的依赖指向同一个 Gopkgs/Gopkgs.json 和 Gopkgs/_workspace.
+
+	`gopkg save pathto/app1 pathto/app2`
+	`gopkg restore pathto/app1 pathto/app2`
+
+文件格式
+========
+
+gopkg 使用 JSON 格式.
+
+类型定义:
+```go
+type Gopkgs struct {
+	ImportPath string
+	GoVersion  string
+	Packages   []string `json:",omitempty"` // Arguments to save, if any.
+	Deps       []Dependency
+}
+
+type Dependency struct {
+	ImportPath string
+	Comment    string `json:",omitempty"` // Description of commit, if present.
+	Rev        string // VCS-specific commit ID.
+}
+```
+
+Gopkgs.json 样例:
+
+```json
+{
+    "ImportPath": "github.com/kr/hk",
+    "GoVersion": "go1.1.2",
+    "Deps": [
+        {
+            "ImportPath": "code.google.com/p/go-netrc/netrc",
+            "Rev": "28676070ab99"
+        },
+        {
+            "ImportPath": "github.com/kr/binarydist",
+            "Rev": "3380ade90f8b0dfa3e363fd7d7e941fa857d0d13"
+        }
+    ]
+}
+```
 
 补充
 ====
