@@ -1,0 +1,4 @@
+gopkg
+=====
+
+Go Package Manager.
